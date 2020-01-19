@@ -1,0 +1,56 @@
+<!-- Adding some style to table -->
+<style type="text/css"> 
+      
+    th:tr{ 
+        color: blue; 
+  
+    } 
+    tr:nth-of-type(2n){ 
+        border: 1px solid black; 
+        background-color: rgba(150, 150, 150, 0.5); 
+  
+    } 
+  
+    td{ 
+        padding: 8px 8px; 
+        border: 1px solid black; 
+    } 
+</style> 
+<h1>Book recommendations for you </h1>
+<p>  The book you selected : <b>{{input_words}} </b>, Blurb :</p>
+ <p>   {{ df.loc[df['title'] == input_words, ['review']].values[0].tolist()[0]  }}
+</p>
+<p> Here are some more recomendations for you :</p>
+{% if results is defined %}
+<table style="margin-left: 20px;">
+  <!-- Table headers -->
+  <th> 
+    <tr style="color: green; ">     
+    <td>Book Name</td> 
+    <td>Book Author</td> 
+    <td>Book Snippet[Taken from Goodreads]</td> 
+    <td>Goodreads Book Rating</td>
+</tr> 
+</th> 
+   <!-- For loop logic of jinja template -->
+{%for i in range(0, 5)%} 
+  
+<!-- table rows -->
+<tr> 
+    <td>
+        <a href="{{ url_for('result', words=  results.values[i]) }}">
+            {{results.values[i]}}
+          </a>
+        
+      </td> 
+    <td>{{ df.loc[df['title'] == results.values[i], ['authors']].values[0].tolist()[0]  }}</td> 
+    <td>{{ df.loc[df['title'] == results.values[i], ['review']].values[0].tolist()[0]  }}</td> 
+    <td>{{ df.loc[df['title'] == results.values[i], ['average_rating']].values[0].tolist()[0]  }}</td> 
+  
+  
+{%endfor%} 
+{%endif%}
+  
+</tr> 
+  
+</table>

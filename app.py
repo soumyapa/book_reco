@@ -1,78 +1,76 @@
 import sys
-import flask
+from flask import Flask
 from flask import render_template , url_for,request , redirect
+import flask
 
-app = flask.Flask(__name__)
 
 #-------- MODEL GOES HERE -----------#
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer , CountVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+from sklearn.metrics.pairwise import cosine_similarity
 from nltk.stem import WordNetLemmatizer
 import string
 from nltk.corpus import stopwords
 import nltk
 import pickle
 
-def text_process(text):
-    '''
-    Takes in a string of text, then performs the following:
-    1. Remove all punctuation
-    2. Remove all stopwords
-    3. Return the cleaned text as a list of words
-    4. Remove words
-    '''
-    stemmer = WordNetLemmatizer()
-    nopunc = [char for char in text if char not in string.punctuation]
-    nopunc = ''.join([i for i in nopunc if not i.isdigit()])
-    nopunc =  [word.lower() for word in nopunc.split() if word not in stopwords.words('english')]
-    nopunc =  [word.lower() for word in nopunc if word not in ['quot','author','book','novel']]
-    return [stemmer.lemmatize(word) for word in nopunc]
-    
-with open('kmeans.pkl', 'rb') as picklefile:
-    MODEL = pickle.load(picklefile)
 
-with open('vectorizer.pkl', 'rb') as picklefile:
-    VECT = pickle.load(picklefile)
+app = flask.Flask(__name__)
 
 with open('dataframe_full.pkl', 'rb') as picklefile:
     DF = pickle.load(picklefile)
 
-#-------- ROUTES GO HERE -----------#
+print("start")
+
+def create_soup(x):
+    return ' '.join(x['authors']) + ' ' + ' '.join(x['title']) + ' ' + x['review'] 
+
+X = DF.review
+DF['soup'] = DF.apply(create_soup, axis=1)
+count = CountVectorizer(stop_words='english')
+count_matrix = count.fit_transform(DF['soup'])
+cosine_sim = cosine_similarity(count_matrix, count_matrix)
+
+DF.reset_index(inplace=True)
+indices = pd.Series(data=DF.index, index=DF.title)
+
+# Function that takes in movie title as input and outputs most similar movies
+def get_recommendations(title, cosine_sim=cosine_sim):
+    # Get the index of the movie that matches the title
+    print(title)
+    idx = indices[title]
+    print(idx)
+    # Get the pairwsie similarity scores of all books with that book
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    #print(sim_scores)
+    # Sort the books based on the similarity score
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True  )
+    sim_scores = sim_scores[1:6]
+    # Get the books indices
+    book_indices = [i[0] for i in sim_scores]
+    t_h = DF['title'].iloc[book_indices]
+    print(type(DF.loc[DF['title'] == t_h.values[0], ['authors']].values[0].tolist()[0]))
+    print(DF.loc[DF['title'] == t_h.values[0], ['authors']].values[0].tolist()[0])
+    # Return the top 5 most similar movies
+    return t_h
 
 
-# This method takes input via an HTML page
-@app.route('/page')
-def page():
-   return render_template('page.html')
+    
 
 @app.route('/result', methods=['POST', 'GET'])
 def result():
     '''Gets prediction using the HTML form'''
-    if flask.request.method == 'POST':
-
-        inputs = flask.request.form
-
-        words = inputs['words']
-        X_sample2 = VECT.transform([words])
-        predicted2 = MODEL.predict(X_sample2)
-        #print(predicted2)
-        result2 = DF.loc[DF['label'] == predicted2[0]].sample(5)
-        #return flask.jsonify(result2['title'][0] , result2['authors'][0]  , result2['review'][0])
-        return render_template('book_reco_result.html', results = result2,input_words = words)
+    if flask.request.method == 'GET':
+        words = flask.request.args['words']
+        return render_template('book_reco_result.html', results = get_recommendations(words),input_words = words , df = DF)
 
 
-# A welcome message to test our server
 @app.route('/')
 def index():
-	return redirect(url_for('page'))
+    return render_template('page.html' , table_data_title = DF['title'],table_data_author = DF['authors'],table_data_review = DF['review'])
 
 if __name__ == '__main__':
-    '''Connects to the server'''
-
-    HOST = '127.0.0.1'
-    PORT = 4000
-    app.run()
-
-
+    app.run(debug=True)
