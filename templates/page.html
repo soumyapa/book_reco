@@ -4,8 +4,27 @@
   </head>
    <body>
 	<form action= "{{ url_for('result') }}" method="POST">         
-	    <p>Input your words <input type = "text" name = "words" /></p>
-  
+	    <p>Input your title of interest <input type = "text" name = "words" /></p>
+       
+       
+       {% if table_data_title is defined %}
+    <form action="" method="post" name="movie_list">
+      <table >
+        {% for title in table_data_title %}
+        <tr>
+          <td>
+          
+            <a href="{{ url_for('result', words=title) }}">
+               {{ title }}
+                  
+             </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+    </form>
+    {% endif %}
 
          <p><input type = "submit" value = "submit" /></p>
       </form>
