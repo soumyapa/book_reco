@@ -1,0 +1,42 @@
+<h3>
+    Book Recomendation system using NLP 
+</h3>
+<p>
+In this exercise , I have attempted to demo a simple content based recomender system I implemented as follows -
+<li>
+    Extracted the list of book titles , authors , isbn # from here : <a href="https://www.kaggle.com/jealousleopard/goodreadsbooks"> Kaggle</a> 
+</li>
+<li>
+    For each isbn from the dataset , extracted the text snippet by making a rest call to GoogleReads API( in python). Sample Call - https://www.googleapis.com/books/v1/volumes?q=isbn:
+</li>
+<li>
+    Removed all the books were the text snippet was empty and finished preparing the dataset and exported it to a pickle file
+</li>
+<li>
+    Initialized CountVectorizer using the soup of words as - authors, title and text snippet for each book. Then implemented a method which takes the input as the choice of 1 book selected by user
+    and then calculates the cosine similarity score of all other books from the dataset and returns top 5 
+</li>
+<li>
+    My personal git repo for this work -<a href="https://github.com/soumyapa/book_reco"> Git </a>  
+</li>
+</p>    
+Select any book that you wish to read below . The list of books is given in alphabetical order and navigate through it by clicking through the page numbers down below.
+<br>
+
+<table>
+<tbody>
+{% for title in titles %}
+<tr>
+
+<td>  <a href="{{ url_for('result', words=title) }}">
+    {{ title }}</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<!-- Bootstrap -->
+<!-- Latest compiled and minified CSS -->
+ 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+{{ pagination.info }}   
+{{ pagination.links }}
