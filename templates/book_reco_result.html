@@ -17,7 +17,7 @@
     } 
 </style> 
 <h1>Book recommendations for you </h1>
-<p>  The book you selected : <b>{{input_words}} </b>, Blurb :</p>
+<p>  The book you selected : <b>{{input_words}} </b>, Text Snippet  :</p>
  <p>   {{ df.loc[df['title'] == input_words, ['review']].values[0].tolist()[0]  }}
 </p>
 <p> Here are some more recomendations for you :</p>
@@ -42,7 +42,7 @@
             {{results.values[i]}}
           </a>
         
-      </td> 
+    </td> 
     <td>{{ df.loc[df['title'] == results.values[i], ['authors']].values[0].tolist()[0]  }}</td> 
     <td>{{ df.loc[df['title'] == results.values[i], ['review']].values[0].tolist()[0]  }}</td> 
     <td>{{ df.loc[df['title'] == results.values[i], ['average_rating']].values[0].tolist()[0]  }}</td> 
